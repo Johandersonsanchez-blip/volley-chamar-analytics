@@ -16,7 +16,19 @@ if "admin_autenticado" not in st.session_state:
     st.session_state["admin_autenticado"] = False
 
 # Base de datos
+def es_version_publica():
+    import os
+    return os.environ.get("VOLLEY_PUBLICO") == "1"
+
+
 def conectar():
+    if es_version_publica():
+        ruta = Path("volley_chamar_publica.db").resolve()
+        return sqlite3.connect(
+            ruta.as_uri() + "?mode=ro",
+            uri=True
+        )
+
     return sqlite3.connect("volley_chamar.db")
 
 
@@ -59,39 +71,47 @@ def preparar_base_datos():
         """)
 
 
-preparar_base_datos()
+
+if not es_version_publica():
+    preparar_base_datos()
 
 
 
-# Acceso de administrador
-st.sidebar.divider()
 
-if not st.session_state["admin_autenticado"]:
-    with st.sidebar.expander("🔐 Acceso administrador"):
-        with st.form("formulario_login"):
-            password = st.text_input(
-                "Contraseña",
-                type="password"
-            )
+# Seguridad: la versión pública nunca tiene privilegios administrativos.
+if es_version_publica():
+    st.session_state["admin_autenticado"] = False
 
-            iniciar = st.form_submit_button("Iniciar sesión")
+if not es_version_publica():
+    # Acceso de administrador
+    st.sidebar.divider()
 
-            if iniciar:
-                if hmac.compare_digest(
-                    password,
-                    st.secrets["ADMIN_PASSWORD"]
-                ):
-                    st.session_state["admin_autenticado"] = True
-                    st.rerun()
-                else:
-                    st.error("Contraseña incorrecta")
+    if not st.session_state["admin_autenticado"]:
+        with st.sidebar.expander("🔐 Acceso administrador"):
+            with st.form("formulario_login"):
+                password = st.text_input(
+                    "Contraseña",
+                    type="password"
+                )
 
-else:
-    st.sidebar.success("🔓 Modo administrador")
+                iniciar = st.form_submit_button("Iniciar sesión")
 
-    if st.sidebar.button("Cerrar sesión"):
-        st.session_state["admin_autenticado"] = False
-        st.rerun()
+                if iniciar:
+                    if hmac.compare_digest(
+                        password,
+                        st.secrets["ADMIN_PASSWORD"]
+                    ):
+                        st.session_state["admin_autenticado"] = True
+                        st.rerun()
+                    else:
+                        st.error("Contraseña incorrecta")
+
+    else:
+        st.sidebar.success("🔓 Modo administrador")
+
+        if st.sidebar.button("Cerrar sesión"):
+            st.session_state["admin_autenticado"] = False
+            st.rerun()
 
 menu = st.sidebar.radio(
     "Menú principal",
