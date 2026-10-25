@@ -1,0 +1,53 @@
+
+.streamlit/secrets.toml
+*.db
+
+# Contraseñas y configuración privada
+.streamlit/secrets.toml
+.env
+.env.*
+
+# Bases de datos y copias de seguridad
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# Copias de seguridad de Python
+*backup*.py
+*_backup_*.py
+
+# Archivos temporales
+__pycache__/
+*.pyc
+.DS_Store
+
+# Archivos locales de respaldo
+.gitignore.backup_local
+
+
+# Archivos de desarrollo y copias locales
+backups/
+app_con_errores.py
+app_respaldo.py
+cargar_*.py
+estadisticas_detalladas_rescate_*.py
+panel_rendimiento_antes_*.py
+
+# Datos privados y respaldos
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+.streamlit/secrets.toml
+.env
+.env.*
+
+# Archivos temporales
+__pycache__/
+*.pyc
+.DS_Store
