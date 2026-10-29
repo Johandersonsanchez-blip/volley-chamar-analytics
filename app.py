@@ -1725,6 +1725,38 @@ elif menu == "Estadísticas":
 
 
 
+
+    # CHV1995_ANALISIS_TECNICO_INDIVIDUAL_V1
+    st.divider()
+    st.subheader("🧠 Análisis técnico individual")
+
+    with conectar() as conexion_evaluaciones:
+        evaluaciones = conexion_evaluaciones.execute(
+            """
+            SELECT j.dorsal, j.nombre, e.observaciones
+            FROM evaluaciones_jugador e
+            JOIN jugadores j ON j.id = e.jugador_id
+            WHERE e.partido_id = ?
+            ORDER BY j.dorsal
+            """,
+            (partido_id,),
+        ).fetchall()
+
+    if evaluaciones:
+        st.caption(
+            "Observaciones técnicas orientadas al desarrollo individual "
+            "y a la mejora colectiva."
+        )
+
+        for dorsal, nombre, observacion in evaluaciones:
+            with st.expander(f"#{dorsal} · {nombre}"):
+                st.write(observacion)
+    else:
+        st.info(
+            "Todavía no hay evaluaciones técnicas registradas "
+            "para este partido."
+        )
+
 # CHV1995_AJUSTE_BANNER_PANELES_V2
 st.markdown("""
 <style>
