@@ -1566,9 +1566,3 @@ def mostrar_distribucion_ofensiva(jugador_id, temporada_id):
     if numero_jornada == 1 and seleccion != "Partido completo":
         titular = DATOS_J1[sets[0]]["titular"]
         st.caption(f"Colocador titular del set: {titular}")
-
-    st.info(
-        "Esta visualización describe la distribución ofensiva "
-        "del equipo. No constituye una medición individual "
-        "del colocador seleccionado."
-    )
