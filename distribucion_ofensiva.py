@@ -516,9 +516,233 @@ def mostrar_distribucion_ofensiva(jugador_id, temporada_id):
     # La distribución ofensiva por zonas se incorporará
     # cuando exista un desglose suficiente por set.
 
+    # CHV_J7_TARJETAS_RENDIMIENTO
+    if numero_jornada == 7:
+        import sqlite3
+
+        with sqlite3.connect(
+            "file:volley_chamar_publica.db?mode=ro",
+            uri=True
+        ) as conexion:
+            jugador = conexion.execute(
+                "SELECT nombre FROM jugadores WHERE id = ?",
+                (jugador_id,)
+            ).fetchone()
+
+        nombre = jugador[0].lower() if jugador else ""
+
+        if "portillo" in nombre:
+            colocaciones = 72
+            positivas = 52
+        elif "marina" in nombre:
+            colocaciones = 31
+            positivas = 14
+        else:
+            colocaciones = None
+            positivas = None
+
+        if colocaciones is not None:
+            calidad = positivas / colocaciones * 100
+
+            st.markdown("### 🏐 Rendimiento del colocador")
+
+            columnas = st.columns(3)
+
+            tarjetas = [
+                (
+                    "🏐 COLOCACIONES OFICIALES",
+                    str(colocaciones),
+                    "Total de J7"
+                ),
+                (
+                    "🎯 CALIDAD POSITIVA",
+                    f"{calidad:.1f}%",
+                    "Calidad oficial de J7"
+                ),
+                (
+                    "📊 COLOCACIONES POSITIVAS",
+                    str(positivas),
+                    "Perfectas + positivas"
+                ),
+            ]
+
+            for columna, (titulo, valor, descripcion) in zip(
+                columnas, tarjetas
+            ):
+                with columna:
+                    st.markdown(
+                        f"""
+                        <div style="
+                            background:linear-gradient(
+                                135deg,#24252d,#15161c
+                            );
+                            border:1px solid #41434d;
+                            border-top:4px solid #ffd700;
+                            border-radius:17px;
+                            padding:25px 12px;
+                            text-align:center;
+                            min-height:175px;
+                        ">
+                            <div style="
+                                color:#d6d6df;
+                                font-size:13px;
+                                font-weight:800;
+                            ">{titulo}</div>
+                            <div style="
+                                color:white;
+                                font-size:39px;
+                                font-weight:800;
+                                margin:22px 0;
+                            ">{valor}</div>
+                            <div style="
+                                color:#a9a9b5;
+                                font-size:12px;
+                            ">{descripcion}</div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+
     # CHV_VISUAL_J7_OLEIROS
     if numero_jornada == 7:
         st.markdown("#### Jornada 7 · CV Oleiros")
+
+
+        # CHV_J7_COMPLEMENTOS_V2
+        # Estadísticas oficiales y participación estimada.
+        import sqlite3
+
+        with sqlite3.connect(
+            "file:volley_chamar_publica.db?mode=ro",
+            uri=True
+        ) as conexion_j7:
+            fila = conexion_j7.execute(
+                "SELECT nombre FROM jugadores WHERE id = ?",
+                (jugador_id,)
+            ).fetchone()
+
+        nombre_j7 = fila[0].lower() if fila else ""
+
+        datos_j7 = None
+
+        if "portillo" in nombre_j7:
+            datos_j7 = {
+                "colocaciones": 72,
+                "saques": 21,
+                "errores_saque": 2,
+                "ataques": 2,
+                "puntos": 1,
+                "titular": True,
+            }
+        elif "marina" in nombre_j7:
+            datos_j7 = {
+                "colocaciones": 31,
+                "saques": 6,
+                "errores_saque": 0,
+                "ataques": 0,
+                "puntos": 0,
+                "titular": False,
+            }
+
+        if datos_j7:
+            st.markdown("### 📊 Otras estadísticas de la jornada")
+
+            columnas = st.columns(4)
+
+            tarjetas = [
+                ("🎾 SAQUES", datos_j7["saques"]),
+                ("❌ ERRORES DE SAQUE", datos_j7["errores_saque"]),
+                ("⚡ ATAQUES", datos_j7["ataques"]),
+                ("🏆 PUNTOS", datos_j7["puntos"]),
+            ]
+
+            for columna, (titulo, valor) in zip(columnas, tarjetas):
+                with columna:
+                    st.markdown(
+                        f"""
+                        <div style="
+                            background:linear-gradient(135deg,#24252d,#15161c);
+                            border:1px solid #41434d;
+                            border-top:4px solid #ffd700;
+                            border-radius:16px;
+                            padding:22px 10px;
+                            text-align:center;
+                            min-height:140px;
+                        ">
+                            <div style="
+                                color:#d6d6df;
+                                font-size:13px;
+                                font-weight:800;
+                            ">{titulo}</div>
+                            <div style="
+                                color:white;
+                                font-size:35px;
+                                font-weight:800;
+                                margin-top:20px;
+                            ">{valor}</div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+
+            st.markdown("### Participación estimada por set")
+
+            ataques_sets = [28, 35, 33, 28]
+            total_ataques = sum(ataques_sets)
+            total_colocaciones = datos_j7["colocaciones"]
+
+            columnas_sets = st.columns(4)
+
+            for numero_set, (columna, ataques_set) in enumerate(
+                zip(columnas_sets, ataques_sets),
+                start=1
+            ):
+                estimacion = (
+                    total_colocaciones * ataques_set / total_ataques
+                )
+
+                estado = (
+                    "TITULAR" if datos_j7["titular"] else "NO TITULAR"
+                )
+
+                with columna:
+                    st.markdown(
+                        f"""
+                        <div style="
+                            background:linear-gradient(135deg,#24252d,#15161c);
+                            border:1px solid #41434d;
+                            border-top:4px solid #ffd700;
+                            border-radius:16px;
+                            padding:22px 10px;
+                            text-align:center;
+                            min-height:160px;
+                        ">
+                            <div style="
+                                color:#d6d6df;
+                                font-size:14px;
+                                font-weight:800;
+                            ">SET {numero_set}</div>
+                            <div style="
+                                color:white;
+                                font-size:35px;
+                                font-weight:800;
+                                margin:20px 0;
+                            ">{estimacion:.1f}</div>
+                            <div style="
+                                color:#ffd700;
+                                font-size:12px;
+                                font-weight:800;
+                            ">{estado}</div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+
+            st.caption(
+                "Participación estimada proporcional al volumen "
+                "de ataques por set; no son colocaciones "
+                "individuales registradas."
+            )
 
         st.markdown("##### Distribución ofensiva por zonas")
 
