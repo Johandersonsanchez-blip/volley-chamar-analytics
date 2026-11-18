@@ -101,7 +101,7 @@ def mostrar_perfil_colocador(partidos, resumen, jugador_id, temporada_id):
     import plotly.graph_objects as go
 
     with sqlite3.connect(
-        "file:volley_chamar.db?mode=ro",
+        "file:volley_chamar_publica.db?mode=ro",
         uri=True
     ) as conexion:
 
