@@ -122,6 +122,48 @@ def calcular_distribucion(sets, jornada=1):
     J2: distribución global observada en Data Volley.
     """
 
+    # CHV_J7_DISTRIBUCION_COLECTIVA_V2
+    # Datos oficiales J7 - CV Oleiros (Data Volley).
+    # Formato: set: (ataques totales, ataques centrales).
+    if jornada == 7:
+        datos_j7 = {
+            1: (28, 9),
+            2: (35, 10),
+            3: (33, 5),
+            4: (28, 9),
+        }
+
+        if not sets or any(s not in datos_j7 for s in sets):
+            return {}, 0
+
+        ataques = sum(datos_j7[s][0] for s in sets)
+        centrales = sum(datos_j7[s][1] for s in sets)
+
+        if ataques == 0:
+            return {}, 0
+
+        proporcion_central = centrales / ataques
+        zonas_exteriores = [4, 2, 5, 6, 1]
+
+        peso_total = sum(
+            REFERENCIA_ZONAS_J2[z]
+            for z in zonas_exteriores
+        )
+
+        distribucion = {
+            3: proporcion_central * 100
+        }
+
+        for zona in zonas_exteriores:
+            distribucion[zona] = (
+                (1 - proporcion_central)
+                * REFERENCIA_ZONAS_J2[zona]
+                / peso_total
+                * 100
+            )
+
+        return distribucion, ataques
+
     if jornada == 2:
         ataques = sum(DATOS_J2[s]["ataques"] for s in sets)
 
@@ -441,6 +483,7 @@ def mostrar_distribucion_ofensiva(jugador_id, temporada_id):
             "J4 — Palencia",
             "J5 — Acenvolley",
             "J6 — Jatorkide",
+            "J7 — CV Oleiros",
         ],
         key=f"distribucion_jornada_{jugador_id}_{temporada_id}",
     )
@@ -472,6 +515,43 @@ def mostrar_distribucion_ofensiva(jugador_id, temporada_id):
     # Estadísticas oficiales almacenadas en SQLite.
     # La distribución ofensiva por zonas se incorporará
     # cuando exista un desglose suficiente por set.
+
+    # CHV_VISUAL_J7_OLEIROS
+    if numero_jornada == 7:
+        st.markdown("#### Jornada 7 · CV Oleiros")
+
+        st.markdown("##### Distribución ofensiva por zonas")
+
+        distribucion, ataques = calcular_distribucion(
+            sets,
+            jornada=7
+        )
+
+        st.metric("Ataques analizados", ataques)
+
+        st.caption(
+            "J7 — Distribución ofensiva colectiva estimada. "
+            "No representa decisiones individuales de cada colocador."
+        )
+
+        if distribucion:
+            st.plotly_chart(
+                crear_cancha(distribucion),
+                width="stretch",
+                key=f"cancha_j7_{jugador_id}_{temporada_id}",
+                config={
+                    "displayModeBar": False,
+                    "scrollZoom": False
+                }
+            )
+        else:
+            st.info(
+                "No hay distribución disponible "
+                "para esta selección."
+            )
+
+        return
+
     if numero_jornada == 6:
         import sqlite3
 
