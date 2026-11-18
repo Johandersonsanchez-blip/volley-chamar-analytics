@@ -4,7 +4,7 @@ from datetime import datetime
 from tablas_html import mostrar_tabla_html
 
 
-def mostrar_historial_colocadores(jugador_id, ruta_db="volley_chamar.db"):
+def mostrar_historial_colocadores(jugador_id, ruta_db="volley_chamar_publica.db"):
     """Muestra el historial de colocación de un jugador."""
 
     with sqlite3.connect(f"file:{ruta_db}?mode=ro", uri=True) as conexion:
