@@ -1,3 +1,28 @@
+
+import streamlit as st
+
+st.markdown("""
+<style>
+/* VOLLEY_CHAMAR_CENTRAR_TARJETAS_J3 */
+
+/* Centrar el contenido de las tarjetas personalizadas */
+div[style*="border-left: 5px solid"],
+div[style*="border-left: 6px solid"],
+div[style*="border-top: 3px solid"] {
+    text-align: center !important;
+}
+
+/* Centrar los elementos interiores */
+div[style*="border-left: 5px solid"] *,
+div[style*="border-left: 6px solid"] *,
+div[style*="border-top: 3px solid"] * {
+    text-align: center !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+from tablas_html import mostrar_tabla_html
 from estadisticas_detalladas import mostrar_estadisticas_detalladas
 from pathlib import Path
 from panel_rendimiento import mostrar_panel_rendimiento
@@ -310,7 +335,21 @@ if menu == "Inicio":
         margin-bottom: 18px;
     }
 
-    .chamar-stat-value {
+    
+/* CHAMAR_CENTRADO_RESUMEN_V1 */
+.chamar-stat-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.chamar-stat-value {
+    text-align: center;
+    width: 100%;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.chamar-stat-value {
         color: #FFFFFF;
         font-size: clamp(30px, 3.5vw, 48px);
         font-weight: 800;
@@ -1095,264 +1134,619 @@ stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             puntos_saque = resumen.get("Saque", {}).get("puntos") or 0
             puntos_bloqueo = resumen.get("Bloqueo", {}).get("puntos") or 0
 
-            mostrar_panel_rendimiento(partidos, resumen)
+            if str(posicion).strip().lower() == "colocador":
+                tab_direccion, tab_detalladas, tab_historial = st.tabs([
+                    "🎯 Dirección de juego",
+                    "📊 Estadísticas detalladas",
+                    "📅 Historial de partidos",
+                ])
 
-            # ESTADÍSTICAS DETALLADAS DEL JUGADOR
-            with conectar() as conexion:
-                conexion.row_factory = sqlite3.Row
+                with tab_direccion:
+                    from perfil_colocador import mostrar_perfil_colocador
+                    mostrar_perfil_colocador(partidos, resumen, jugador_perfil_id, temporada_perfil_id)
 
-                filas_detalladas = conexion.execute(
-                    '''
-                    SELECT
-                        ef.fundamento,
-                        SUM(ef.total_acciones) AS acciones,
-                        SUM(ef.errores) AS errores,
-                        SUM(ef.puntos) AS puntos,
-                        SUM(ef.bloqueos_recibidos) AS bloqueos_recibidos,
+                with tab_detalladas:
+                    # ESTADÍSTICAS DETALLADAS DEL JUGADOR
+                    with conectar() as conexion:
+                        conexion.row_factory = sqlite3.Row
 
-                        SUM(
-                            CASE
-                                WHEN ef.total_acciones > 0
-                                AND ef.eficiencia_original IS NOT NULL
-                                THEN ef.total_acciones * ef.eficiencia_original
-                            END
-                        ) /
-                        NULLIF(
+                        filas_detalladas = conexion.execute(
+                            '''
+                            SELECT
+                                ef.fundamento,
+                                SUM(ef.total_acciones) AS acciones,
+                                SUM(ef.errores) AS errores,
+                                SUM(ef.puntos) AS puntos,
+                                SUM(ef.bloqueos_recibidos) AS bloqueos_recibidos,
+
+                                SUM(
+                                    CASE
+                                        WHEN ef.total_acciones > 0
+                                        AND ef.eficiencia_original IS NOT NULL
+                                        THEN ef.total_acciones * ef.eficiencia_original
+                                    END
+                                ) /
+                                NULLIF(
+                                    SUM(
+                                        CASE
+                                            WHEN ef.total_acciones > 0
+                                            AND ef.eficiencia_original IS NOT NULL
+                                            THEN ef.total_acciones
+                                        END
+                                    ), 0
+                                ) AS eficiencia_original,
+
+                                SUM(
+                                    CASE
+                                        WHEN ef.total_acciones > 0
+                                        AND ef.porcentaje_positivo IS NOT NULL
+                                        THEN ef.total_acciones * ef.porcentaje_positivo
+                                    END
+                                ) /
+                                NULLIF(
+                                    SUM(
+                                        CASE
+                                            WHEN ef.total_acciones > 0
+                                            AND ef.porcentaje_positivo IS NOT NULL
+                                            THEN ef.total_acciones
+                                        END
+                                    ), 0
+                                ) AS porcentaje_positivo,
+
+                                SUM(
+                                    CASE
+                                        WHEN ef.total_acciones > 0
+                                        AND ef.porcentaje_excelente IS NOT NULL
+                                        THEN ef.total_acciones * ef.porcentaje_excelente
+                                    END
+                                ) /
+                                NULLIF(
+                                    SUM(
+                                        CASE
+                                            WHEN ef.total_acciones > 0
+                                            AND ef.porcentaje_excelente IS NOT NULL
+                                            THEN ef.total_acciones
+                                        END
+                                    ), 0
+                                ) AS porcentaje_excelente
+
+                            FROM estadisticas_fundamento ef
+
+                            JOIN partidos p
+                                ON p.id = ef.partido_id
+
+                            WHERE ef.jugador_id = ?
+                              AND p.temporada_id = ?
+
+                            GROUP BY ef.fundamento
+                            ''',
+                            (
+                                jugador_perfil_id,
+                                temporada_perfil_id
+                            )
+                        ).fetchall()
+
+                    mostrar_estadisticas_detalladas(
+                        [dict(fila) for fila in filas_detalladas]
+                    )
+
+
+                with tab_historial:
+                    # HISTORIAL INDIVIDUAL DE PARTIDOS
+                    st.markdown("---")
+                    st.markdown("### 📅 Historial de partidos")
+
+                    with conectar() as conexion:
+                        partidos_jugador = conexion.execute("""
+                            SELECT
+                                p.id,
+                                p.jornada,
+                                p.rival,
+                                p.fecha,
+                                p.resultado
+                            FROM partidos p
+                            WHERE p.temporada_id = ?
+                              AND EXISTS (
+                                  SELECT 1
+                                  FROM estadisticas_fundamento ef
+                                  WHERE ef.partido_id = p.id
+                                    AND ef.jugador_id = ?
+                              )
+                            ORDER BY p.fecha DESC, p.jornada DESC
+                        """, (
+                            temporada_perfil_id,
+                            jugador_perfil_id
+                        )).fetchall()
+
+                    if partidos_jugador:
+                        opciones_partidos = {
+                            f"Jornada {jornada} · {rival} · {fecha} · {resultado}": partido_id
+                            for partido_id, jornada, rival, fecha, resultado
+                            in partidos_jugador
+                        }
+
+
+                        with conectar() as conexion:
+                            historial = conexion.execute(
+                                '''
+                                SELECT
+                                    p.jornada,
+                                    p.rival,
+                                    p.fecha,
+                                    p.resultado,
+                                    COALESCE(SUM(
+                                        CASE WHEN ef.fundamento IN ('Ataque', 'Saque', 'Bloqueo')
+                                        THEN ef.puntos ELSE 0 END
+                                    ), 0),
+                                    COALESCE(SUM(
+                                        CASE WHEN ef.fundamento = 'Ataque'
+                                        THEN ef.puntos ELSE 0 END
+                                    ), 0),
+                                    COALESCE(SUM(
+                                        CASE WHEN ef.fundamento = 'Saque'
+                                        THEN ef.puntos ELSE 0 END
+                                    ), 0),
+                                    COALESCE(SUM(
+                                        CASE WHEN ef.fundamento = 'Bloqueo'
+                                        THEN ef.puntos ELSE 0 END
+                                    ), 0)
+                                FROM partidos p
+                                JOIN estadisticas_fundamento ef
+                                    ON ef.partido_id = p.id
+                                WHERE ef.jugador_id = ?
+                                GROUP BY p.id
+                                ORDER BY p.fecha DESC, p.jornada DESC
+                                ''',
+                                (jugador_perfil_id,)
+                            ).fetchall()
+
+                        filas_historial = []
+
+                        for registro in historial:
+                            jornada, rival, fecha, resultado, total, ataque, saque, bloqueo = registro
+
+                            try:
+                                fecha_visible = __import__('datetime').datetime.strptime(
+                                    fecha, "%Y-%m-%d"
+                                ).strftime("%d/%m/%Y")
+                            except (ValueError, TypeError):
+                                fecha_visible = fecha or "—"
+
+                            filas_historial.append({
+                                "Jornada": jornada,
+                                "Rival": rival,
+                                "Fecha": fecha_visible,
+                                "Resultado": resultado,
+                                "Ataque": ataque,
+                                "Saque": saque,
+                                "Bloqueo": bloqueo,
+                                "Puntos": total,
+                            })
+
+                        if str(posicion).strip().lower() == "colocador":
+                            from historial_colocadores import mostrar_historial_colocadores
+                            mostrar_historial_colocadores(jugador_perfil_id)
+                            with st.expander("🏐 Ver también estadísticas ofensivas"):
+                                mostrar_tabla_html(
+                            filas_historial,
+                            ayudas={
+                                "Jornada": "Número de jornada de la competición.",
+                                "Rival": "Equipo contra el que se disputó el partido.",
+                                "Fecha": "Fecha en la que se disputó el encuentro.",
+                                "Resultado": "Marcador final del partido expresado en sets.",
+                                "Ataque": "Puntos directos conseguidos mediante ataques.",
+                                "Saque": "Puntos directos conseguidos mediante el servicio.",
+                                "Bloqueo": "Puntos directos conseguidos mediante bloqueos.",
+                                "Puntos": "Total de puntos: ataque + saque + bloqueo.",
+                            },
+                        )
+
+                                st.markdown("#### 🔎 Desglose individual del partido")
+
+                                partido_seleccionado = st.selectbox(
+                                    "Selecciona un partido",
+                                    list(opciones_partidos),
+                                    key=f"historial_colocador_a_{jugador_perfil_id}"
+                                )
+                        else:
+                            mostrar_tabla_html(
+                        filas_historial,
+                        ayudas={
+                            "Jornada": "Número de jornada de la competición.",
+                            "Rival": "Equipo contra el que se disputó el partido.",
+                            "Fecha": "Fecha en la que se disputó el encuentro.",
+                            "Resultado": "Marcador final del partido expresado en sets.",
+                            "Ataque": "Puntos directos conseguidos mediante ataques.",
+                            "Saque": "Puntos directos conseguidos mediante el servicio.",
+                            "Bloqueo": "Puntos directos conseguidos mediante bloqueos.",
+                            "Puntos": "Total de puntos: ataque + saque + bloqueo.",
+                        },
+                    )
+
+                            st.markdown("#### 🔎 Desglose individual del partido")
+
+                            partido_seleccionado = st.selectbox(
+                                "Selecciona un partido",
+                                list(opciones_partidos),
+                                key=f"historial_colocador_b_{jugador_perfil_id}"
+                            )
+
+                        partido_id = opciones_partidos[partido_seleccionado]
+
+                        with conectar() as conexion:
+                            estadisticas_partido = conexion.execute("""
+                                SELECT
+                                    fundamento,
+                                    total_acciones,
+                                    errores,
+                                    puntos,
+                                    bloqueos_recibidos,
+                                    porcentaje_puntos,
+                                    eficiencia_original,
+                                    porcentaje_excelente,
+                                    porcentaje_positivo
+                                FROM estadisticas_fundamento
+                                WHERE partido_id = ?
+                                  AND jugador_id = ?
+                                ORDER BY CASE fundamento
+                                    WHEN 'Ataque' THEN 1
+                                    WHEN 'Saque' THEN 2
+                                    WHEN 'Recepción' THEN 3
+                                    WHEN 'Defensa' THEN 4
+                                    WHEN 'Bloqueo' THEN 5
+                                    ELSE 6
+                                END
+                            """, (
+                                partido_id,
+                                jugador_perfil_id
+                            )).fetchall()
+
+                        def valor_perfil(valor, porcentaje=False):
+                            if valor is None:
+                                return "—"
+                            if porcentaje:
+                                return f"{valor:g} %"
+                            return str(valor)
+
+                        filas = []
+
+                        for fila in estadisticas_partido:
+                            filas.append({
+                                "Fundamento": fila[0],
+                                "Acciones": valor_perfil(fila[1]),
+                                "Errores": valor_perfil(fila[2]),
+                                "Puntos": valor_perfil(fila[3]),
+                                "Bloqueos recibidos": valor_perfil(fila[4]),
+                                "% puntos": valor_perfil(fila[5], True),
+                                "Eficiencia PDF": valor_perfil(fila[6], True),
+                                "% excelente": valor_perfil(fila[7], True),
+                                "% positivo": valor_perfil(fila[8], True),
+                            })
+
+                        import pandas as pd
+
+                        tabla_centrada = pd.DataFrame(filas).style.set_properties(
+                            **{"text-align": "center"}
+                        ).set_table_styles([
+                            {"selector": "th", "props": [("text-align", "center")]}
+                        ])
+
+                        mostrar_tabla_html(filas)
+
+                        st.caption(
+                            "— significa dato no registrado o no aplicable. "
+                            "Los porcentajes del PDF se conservan sin recalcular."
+                        )
+                    else:
+                        st.info(
+                            "Todavía no hay partidos con estadísticas "
+                            "individuales para este jugador."
+                        )
+
+
+            # CHV_PERFIL_LIBERO_V1
+            elif str(posicion).strip().lower() in ('líbero', 'libero'):
+                from perfil_libero import mostrar_perfil_libero
+                mostrar_perfil_libero(
+                    jugador_perfil_id,
+                    temporada_perfil_id
+                )
+            else:
+                mostrar_panel_rendimiento(partidos, resumen)
+                # ESTADÍSTICAS DETALLADAS DEL JUGADOR
+                with conectar() as conexion:
+                    conexion.row_factory = sqlite3.Row
+
+                    filas_detalladas = conexion.execute(
+                        '''
+                        SELECT
+                            ef.fundamento,
+                            SUM(ef.total_acciones) AS acciones,
+                            SUM(ef.errores) AS errores,
+                            SUM(ef.puntos) AS puntos,
+                            SUM(ef.bloqueos_recibidos) AS bloqueos_recibidos,
+
                             SUM(
                                 CASE
                                     WHEN ef.total_acciones > 0
                                     AND ef.eficiencia_original IS NOT NULL
-                                    THEN ef.total_acciones
+                                    THEN ef.total_acciones * ef.eficiencia_original
                                 END
-                            ), 0
-                        ) AS eficiencia_original,
+                            ) /
+                            NULLIF(
+                                SUM(
+                                    CASE
+                                        WHEN ef.total_acciones > 0
+                                        AND ef.eficiencia_original IS NOT NULL
+                                        THEN ef.total_acciones
+                                    END
+                                ), 0
+                            ) AS eficiencia_original,
 
-                        SUM(
-                            CASE
-                                WHEN ef.total_acciones > 0
-                                AND ef.porcentaje_positivo IS NOT NULL
-                                THEN ef.total_acciones * ef.porcentaje_positivo
-                            END
-                        ) /
-                        NULLIF(
                             SUM(
                                 CASE
                                     WHEN ef.total_acciones > 0
                                     AND ef.porcentaje_positivo IS NOT NULL
-                                    THEN ef.total_acciones
+                                    THEN ef.total_acciones * ef.porcentaje_positivo
                                 END
-                            ), 0
-                        ) AS porcentaje_positivo,
+                            ) /
+                            NULLIF(
+                                SUM(
+                                    CASE
+                                        WHEN ef.total_acciones > 0
+                                        AND ef.porcentaje_positivo IS NOT NULL
+                                        THEN ef.total_acciones
+                                    END
+                                ), 0
+                            ) AS porcentaje_positivo,
 
-                        SUM(
-                            CASE
-                                WHEN ef.total_acciones > 0
-                                AND ef.porcentaje_excelente IS NOT NULL
-                                THEN ef.total_acciones * ef.porcentaje_excelente
-                            END
-                        ) /
-                        NULLIF(
                             SUM(
                                 CASE
                                     WHEN ef.total_acciones > 0
                                     AND ef.porcentaje_excelente IS NOT NULL
-                                    THEN ef.total_acciones
+                                    THEN ef.total_acciones * ef.porcentaje_excelente
                                 END
-                            ), 0
-                        ) AS porcentaje_excelente
+                            ) /
+                            NULLIF(
+                                SUM(
+                                    CASE
+                                        WHEN ef.total_acciones > 0
+                                        AND ef.porcentaje_excelente IS NOT NULL
+                                        THEN ef.total_acciones
+                                    END
+                                ), 0
+                            ) AS porcentaje_excelente
 
-                    FROM estadisticas_fundamento ef
+                        FROM estadisticas_fundamento ef
 
-                    JOIN partidos p
-                        ON p.id = ef.partido_id
+                        JOIN partidos p
+                            ON p.id = ef.partido_id
 
-                    WHERE ef.jugador_id = ?
-                      AND p.temporada_id = ?
+                        WHERE ef.jugador_id = ?
+                          AND p.temporada_id = ?
 
-                    GROUP BY ef.fundamento
-                    ''',
-                    (
-                        jugador_perfil_id,
-                        temporada_perfil_id
-                    )
-                ).fetchall()
+                        GROUP BY ef.fundamento
+                        ''',
+                        (
+                            jugador_perfil_id,
+                            temporada_perfil_id
+                        )
+                    ).fetchall()
 
-            mostrar_estadisticas_detalladas(
-                [dict(fila) for fila in filas_detalladas]
-            )
+                mostrar_estadisticas_detalladas(
+                    [dict(fila) for fila in filas_detalladas]
+                )
 
-            # HISTORIAL INDIVIDUAL DE PARTIDOS
-            st.markdown("---")
-            st.markdown("### 📅 Historial de partidos")
-
-            with conectar() as conexion:
-                partidos_jugador = conexion.execute("""
-                    SELECT
-                        p.id,
-                        p.jornada,
-                        p.rival,
-                        p.fecha,
-                        p.resultado
-                    FROM partidos p
-                    WHERE p.temporada_id = ?
-                      AND EXISTS (
-                          SELECT 1
-                          FROM estadisticas_fundamento ef
-                          WHERE ef.partido_id = p.id
-                            AND ef.jugador_id = ?
-                      )
-                    ORDER BY p.fecha DESC, p.jornada DESC
-                """, (
-                    temporada_perfil_id,
-                    jugador_perfil_id
-                )).fetchall()
-
-            if partidos_jugador:
-                opciones_partidos = {
-                    f"Jornada {jornada} · {rival} · {fecha} · {resultado}": partido_id
-                    for partido_id, jornada, rival, fecha, resultado
-                    in partidos_jugador
-                }
-
+                # HISTORIAL INDIVIDUAL DE PARTIDOS
+                st.markdown("---")
+                st.markdown("### 📅 Historial de partidos")
 
                 with conectar() as conexion:
-                    historial = conexion.execute(
-                        '''
+                    partidos_jugador = conexion.execute("""
                         SELECT
+                            p.id,
                             p.jornada,
                             p.rival,
                             p.fecha,
-                            p.resultado,
-                            COALESCE(SUM(
-                                CASE WHEN ef.fundamento IN ('Ataque', 'Saque', 'Bloqueo')
-                                THEN ef.puntos ELSE 0 END
-                            ), 0),
-                            COALESCE(SUM(
-                                CASE WHEN ef.fundamento = 'Ataque'
-                                THEN ef.puntos ELSE 0 END
-                            ), 0),
-                            COALESCE(SUM(
-                                CASE WHEN ef.fundamento = 'Saque'
-                                THEN ef.puntos ELSE 0 END
-                            ), 0),
-                            COALESCE(SUM(
-                                CASE WHEN ef.fundamento = 'Bloqueo'
-                                THEN ef.puntos ELSE 0 END
-                            ), 0)
+                            p.resultado
                         FROM partidos p
-                        JOIN estadisticas_fundamento ef
-                            ON ef.partido_id = p.id
-                        WHERE ef.jugador_id = ?
-                        GROUP BY p.id
+                        WHERE p.temporada_id = ?
+                          AND EXISTS (
+                              SELECT 1
+                              FROM estadisticas_fundamento ef
+                              WHERE ef.partido_id = p.id
+                                AND ef.jugador_id = ?
+                          )
                         ORDER BY p.fecha DESC, p.jornada DESC
-                        ''',
-                        (jugador_perfil_id,)
-                    ).fetchall()
-
-                filas_historial = []
-
-                for registro in historial:
-                    jornada, rival, fecha, resultado, total, ataque, saque, bloqueo = registro
-
-                    try:
-                        fecha_visible = __import__('datetime').datetime.strptime(
-                            fecha, "%Y-%m-%d"
-                        ).strftime("%d/%m/%Y")
-                    except (ValueError, TypeError):
-                        fecha_visible = fecha or "—"
-
-                    filas_historial.append({
-                        "Jornada": jornada,
-                        "Rival": rival,
-                        "Fecha": fecha_visible,
-                        "Resultado": resultado,
-                        "Puntos": total,
-                        "Ataque": ataque,
-                        "Saque": saque,
-                        "Bloqueo": bloqueo,
-                    })
-
-                st.dataframe(
-                    filas_historial,
-                    use_container_width=True,
-                    hide_index=True
-                )
-
-                st.markdown("#### 🔎 Desglose individual del partido")
-
-                partido_seleccionado = st.selectbox(
-                    "Selecciona un partido",
-                    list(opciones_partidos),
-                    key=f"historial_jugador_{jugador_perfil_id}"
-                )
-
-                partido_id = opciones_partidos[partido_seleccionado]
-
-                with conectar() as conexion:
-                    estadisticas_partido = conexion.execute("""
-                        SELECT
-                            fundamento,
-                            total_acciones,
-                            errores,
-                            puntos,
-                            bloqueos_recibidos,
-                            porcentaje_puntos,
-                            eficiencia_original,
-                            porcentaje_excelente,
-                            porcentaje_positivo
-                        FROM estadisticas_fundamento
-                        WHERE partido_id = ?
-                          AND jugador_id = ?
-                        ORDER BY CASE fundamento
-                            WHEN 'Ataque' THEN 1
-                            WHEN 'Saque' THEN 2
-                            WHEN 'Recepción' THEN 3
-                            WHEN 'Defensa' THEN 4
-                            WHEN 'Bloqueo' THEN 5
-                            ELSE 6
-                        END
                     """, (
-                        partido_id,
+                        temporada_perfil_id,
                         jugador_perfil_id
                     )).fetchall()
 
-                def valor_perfil(valor, porcentaje=False):
-                    if valor is None:
-                        return "—"
-                    if porcentaje:
-                        return f"{valor:g} %"
-                    return str(valor)
+                if partidos_jugador:
+                    opciones_partidos = {
+                        f"Jornada {jornada} · {rival} · {fecha} · {resultado}": partido_id
+                        for partido_id, jornada, rival, fecha, resultado
+                        in partidos_jugador
+                    }
 
-                filas = []
 
-                for fila in estadisticas_partido:
-                    filas.append({
-                        "Fundamento": fila[0],
-                        "Acciones": valor_perfil(fila[1]),
-                        "Errores": valor_perfil(fila[2]),
-                        "Puntos": valor_perfil(fila[3]),
-                        "Bloqueos recibidos": valor_perfil(fila[4]),
-                        "% puntos": valor_perfil(fila[5], True),
-                        "Eficiencia PDF": valor_perfil(fila[6], True),
-                        "% excelente": valor_perfil(fila[7], True),
-                        "% positivo": valor_perfil(fila[8], True),
-                    })
+                    with conectar() as conexion:
+                        historial = conexion.execute(
+                            '''
+                            SELECT
+                                p.jornada,
+                                p.rival,
+                                p.fecha,
+                                p.resultado,
+                                COALESCE(SUM(
+                                    CASE WHEN ef.fundamento IN ('Ataque', 'Saque', 'Bloqueo')
+                                    THEN ef.puntos ELSE 0 END
+                                ), 0),
+                                COALESCE(SUM(
+                                    CASE WHEN ef.fundamento = 'Ataque'
+                                    THEN ef.puntos ELSE 0 END
+                                ), 0),
+                                COALESCE(SUM(
+                                    CASE WHEN ef.fundamento = 'Saque'
+                                    THEN ef.puntos ELSE 0 END
+                                ), 0),
+                                COALESCE(SUM(
+                                    CASE WHEN ef.fundamento = 'Bloqueo'
+                                    THEN ef.puntos ELSE 0 END
+                                ), 0)
+                            FROM partidos p
+                            JOIN estadisticas_fundamento ef
+                                ON ef.partido_id = p.id
+                            WHERE ef.jugador_id = ?
+                            GROUP BY p.id
+                            ORDER BY p.fecha DESC, p.jornada DESC
+                            ''',
+                            (jugador_perfil_id,)
+                        ).fetchall()
 
-                st.dataframe(
-                    filas,
-                    use_container_width=True,
-                    hide_index=True
+                    filas_historial = []
+
+                    for registro in historial:
+                        jornada, rival, fecha, resultado, total, ataque, saque, bloqueo = registro
+
+                        try:
+                            fecha_visible = __import__('datetime').datetime.strptime(
+                                fecha, "%Y-%m-%d"
+                            ).strftime("%d/%m/%Y")
+                        except (ValueError, TypeError):
+                            fecha_visible = fecha or "—"
+
+                        filas_historial.append({
+                            "Jornada": jornada,
+                            "Rival": rival,
+                            "Fecha": fecha_visible,
+                            "Resultado": resultado,
+                            "Ataque": ataque,
+                            "Saque": saque,
+                            "Bloqueo": bloqueo,
+                            "Puntos": total,
+                        })
+
+                    if str(posicion).strip().lower() == "colocador":
+                        from historial_colocadores import mostrar_historial_colocadores
+                        mostrar_historial_colocadores(jugador_perfil_id)
+                        with st.expander("🏐 Ver también estadísticas ofensivas"):
+                            mostrar_tabla_html(
+                        filas_historial,
+                        ayudas={
+                            "Jornada": "Número de jornada de la competición.",
+                            "Rival": "Equipo contra el que se disputó el partido.",
+                            "Fecha": "Fecha en la que se disputó el encuentro.",
+                            "Resultado": "Marcador final del partido expresado en sets.",
+                            "Ataque": "Puntos directos conseguidos mediante ataques.",
+                            "Saque": "Puntos directos conseguidos mediante el servicio.",
+                            "Bloqueo": "Puntos directos conseguidos mediante bloqueos.",
+                            "Puntos": "Total de puntos: ataque + saque + bloqueo.",
+                        },
+                    )
+
+                            st.markdown("#### 🔎 Desglose individual del partido")
+
+                            partido_seleccionado = st.selectbox(
+                                "Selecciona un partido",
+                                list(opciones_partidos),
+                                key=f"historial_general_a_{jugador_perfil_id}"
+                            )
+                    else:
+                        mostrar_tabla_html(
+                    filas_historial,
+                    ayudas={
+                        "Jornada": "Número de jornada de la competición.",
+                        "Rival": "Equipo contra el que se disputó el partido.",
+                        "Fecha": "Fecha en la que se disputó el encuentro.",
+                        "Resultado": "Marcador final del partido expresado en sets.",
+                        "Ataque": "Puntos directos conseguidos mediante ataques.",
+                        "Saque": "Puntos directos conseguidos mediante el servicio.",
+                        "Bloqueo": "Puntos directos conseguidos mediante bloqueos.",
+                        "Puntos": "Total de puntos: ataque + saque + bloqueo.",
+                    },
                 )
 
-                st.caption(
-                    "— significa dato no registrado o no aplicable. "
-                    "Los porcentajes del PDF se conservan sin recalcular."
-                )
-            else:
-                st.info(
-                    "Todavía no hay partidos con estadísticas "
-                    "individuales para este jugador."
-                )
+                        st.markdown("#### 🔎 Desglose individual del partido")
+
+                        partido_seleccionado = st.selectbox(
+                            "Selecciona un partido",
+                            list(opciones_partidos),
+                            key=f"historial_general_b_{jugador_perfil_id}"
+                        )
+
+                    partido_id = opciones_partidos[partido_seleccionado]
+
+                    with conectar() as conexion:
+                        estadisticas_partido = conexion.execute("""
+                            SELECT
+                                fundamento,
+                                total_acciones,
+                                errores,
+                                puntos,
+                                bloqueos_recibidos,
+                                porcentaje_puntos,
+                                eficiencia_original,
+                                porcentaje_excelente,
+                                porcentaje_positivo
+                            FROM estadisticas_fundamento
+                            WHERE partido_id = ?
+                              AND jugador_id = ?
+                            ORDER BY CASE fundamento
+                                WHEN 'Ataque' THEN 1
+                                WHEN 'Saque' THEN 2
+                                WHEN 'Recepción' THEN 3
+                                WHEN 'Defensa' THEN 4
+                                WHEN 'Bloqueo' THEN 5
+                                ELSE 6
+                            END
+                        """, (
+                            partido_id,
+                            jugador_perfil_id
+                        )).fetchall()
+
+                    def valor_perfil(valor, porcentaje=False):
+                        if valor is None:
+                            return "—"
+                        if porcentaje:
+                            return f"{valor:g} %"
+                        return str(valor)
+
+                    filas = []
+
+                    for fila in estadisticas_partido:
+                        filas.append({
+                            "Fundamento": fila[0],
+                            "Acciones": valor_perfil(fila[1]),
+                            "Errores": valor_perfil(fila[2]),
+                            "Puntos": valor_perfil(fila[3]),
+                            "Bloqueos recibidos": valor_perfil(fila[4]),
+                            "% puntos": valor_perfil(fila[5], True),
+                            "Eficiencia PDF": valor_perfil(fila[6], True),
+                            "% excelente": valor_perfil(fila[7], True),
+                            "% positivo": valor_perfil(fila[8], True),
+                        })
+
+                    import pandas as pd
+
+                    tabla_centrada = pd.DataFrame(filas).style.set_properties(
+                        **{"text-align": "center"}
+                    ).set_table_styles([
+                        {"selector": "th", "props": [("text-align", "center")]}
+                    ])
+
+                    mostrar_tabla_html(filas)
+
+                    st.caption(
+                        "— significa dato no registrado o no aplicable. "
+                        "Los porcentajes del PDF se conservan sin recalcular."
+                    )
+                else:
+                    st.info(
+                        "Todavía no hay partidos con estadísticas "
+                        "individuales para este jugador."
+                    )
 
 elif menu == "Partidos":
     st.header("Gestión de partidos")
@@ -1580,10 +1974,6 @@ elif menu == "Estadísticas":
                     continue
 
                 def mostrar(valor, porcentaje=False):
-                    if valor is None:
-                        return "—"
-                    if porcentaje:
-                        return f"{valor:g} %"
                     return valor
 
                 registro = {
@@ -1660,7 +2050,7 @@ elif menu == "Estadísticas":
             st.dataframe(
                 [
                     {
-                        columna: str(valor) if valor is not None else "—"
+                        columna: valor
                         for columna, valor in fila.items()
                     }
                     for fila in detalle
@@ -1668,15 +2058,41 @@ elif menu == "Estadísticas":
                 width="stretch",
                 hide_index=True,
                 column_config={
-                    "Jugador": st.column_config.TextColumn(
-                        "Jugador",
-                        width="large"
-                    ),
-                    "Posición": st.column_config.TextColumn(
-                        "Posición",
-                        width="medium"
-                    ),
-                }
+                            'Jugador': st.column_config.TextColumn(
+                                'Jugador',
+                    help='Nombre del jugador.',
+                    width=300
+                            ),
+                            'Posición': st.column_config.TextColumn(
+                                'Posición',
+                    help='Posición habitual del jugador.',
+                    width=110
+                            ),
+                            'Acciones': st.column_config.NumberColumn(
+                                'Acciones',
+                    help='Número total de acciones registradas en este fundamento.'
+                            ),
+                            'Errores': st.column_config.NumberColumn(
+                                'Errores',
+                    help='Acciones que terminaron en error, según el registro estadístico.'
+                            ),
+                            'Bloqueos recibidos': st.column_config.NumberColumn(
+                                'Bloqueos recibidos',
+                    help='Ataques que fueron bloqueados por el equipo contrario.'
+                            ),
+                            'Puntos': st.column_config.NumberColumn(
+                                'Puntos',
+                    help='Puntos directos conseguidos mediante este fundamento.'
+                            ),
+                            '% puntos': st.column_config.NumberColumn(
+                                '% puntos',
+                    help='Porcentaje de acciones que terminaron en punto: (puntos ÷ acciones) × 100.'
+                            ),
+                            'Eficiencia PDF': st.column_config.NumberColumn(
+                                'Eficiencia PDF',
+                    help='Eficiencia registrada en el informe original de Data Volley. No equivale necesariamente al porcentaje de puntos.'
+                            ),
+                        }
             )
 
             st.divider()

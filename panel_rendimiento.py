@@ -4,72 +4,149 @@ from html import escape
 
 
 
+
 def mostrar_radar_chv(resumen):
+    """Radar con modos de contribución y calidad de ejecución."""
+    import streamlit as st
     import plotly.graph_objects as go
 
-    def obtener(fundamento, campo):
-        registro = resumen.get(fundamento, {})
-        return registro.get(campo)
+    def dato(fundamento, campo):
+        return resumen.get(fundamento, {}).get(campo)
 
-    ataque = obtener("Ataque", "porcentaje_puntos")
-    recepcion = obtener("Recepción", "porcentaje_positivo")
-    defensa = obtener("Defensa", "porcentaje_positivo")
+    def numero(valor):
+        try:
+            return max(0.0, float(valor or 0))
+        except (TypeError, ValueError):
+            return 0.0
 
-    saque_acciones = obtener("Saque", "acciones")
-    saque_puntos = obtener("Saque", "puntos")
+    fundamentos = ["Ataque", "Saque", "Recepción", "Defensa", "Bloqueo"]
 
-    if saque_acciones is not None and saque_acciones > 0:
-        saque = (saque_puntos or 0) / saque_acciones * 100
+    acciones = {
+        f: numero(dato(f, "acciones"))
+        for f in fundamentos
+    }
+
+    puntos = {
+        f: numero(dato(f, "puntos"))
+        for f in fundamentos
+    }
+
+    porcentajes = {
+        "Ataque": dato("Ataque", "porcentaje_puntos"),
+        "Recepción": dato("Recepción", "porcentaje_positivo"),
+        "Defensa": dato("Defensa", "porcentaje_positivo"),
+    }
+
+    if acciones["Saque"] > 0:
+        porcentajes["Saque"] = (
+            puntos["Saque"] / acciones["Saque"] * 100
+        )
     else:
-        saque = None
+        porcentajes["Saque"] = None
 
-    # No hay intentos totales de bloqueo registrados.
-    bloqueo = None
+    porcentajes["Bloqueo"] = None
 
-    indicadores = [
-        ("Ataque", ataque),
-        ("Saque", saque),
-        ("Recepción", recepcion),
-        ("Defensa", defensa),
-        ("Bloqueo", bloqueo),
-    ]
+    st.markdown(
+        '<div class="chv-panel-header">'
+        '<div class="chv-panel-header-text">'
+        '<div class="chv-panel-header-title">🎯 Perfil del jugador</div>'
+        '<div class="chv-panel-header-subtitle">'
+        'Contribución y calidad por fundamento'
+        '</div></div></div>',
+        unsafe_allow_html=True,
+    )
 
-    nombres = [nombre for nombre, _ in indicadores]
-    valores = [valor for _, valor in indicadores]
+    modo = st.radio(
+        "Modo de visualización",
+        ["Participación", "Calidad de ejecución"],
+        horizontal=True,
+        key="chv_modo_radar",
+        label_visibility="collapsed",
+    )
 
-    # Figura cerrada únicamente con indicadores disponibles.
-    puntos_validos = [
-        (nombre, valor)
-        for nombre, valor in indicadores
-        if valor is not None
-    ]
+    if modo == "Participación":
+        # Distribución de las acciones registradas.
+        # El bloqueo no tiene intentos totales disponibles.
+        fundamentos_participacion = [
+            "Ataque", "Saque", "Recepción", "Defensa"
+        ]
 
-    nombres_validos = [nombre for nombre, _ in puntos_validos]
-    valores_validos = [valor for _, valor in puntos_validos]
+        total_acciones = sum(
+            acciones[f] for f in fundamentos_participacion
+        )
 
-    if len(puntos_validos) >= 3:
-        nombres_validos.append(nombres_validos[0])
-        valores_validos.append(valores_validos[0])
+        valores = [
+            acciones[f] / total_acciones * 100
+            if total_acciones > 0 else 0
+            for f in fundamentos
+        ]
+
+        # Sin intentos registrados, bloqueo no es comparable.
+        valores[fundamentos.index("Bloqueo")] = None
+
+        descripcion = (
+            "El bloqueo no se incluye porque no disponemos "
+            "del número total de intentos."
+        )
+
+    else:
+        # Porcentajes técnicos originales, sin ajuste por muestra.
+        valores = []
+        for f in fundamentos:
+            porcentaje = porcentajes[f]
+            n = acciones[f]
+
+            if porcentaje is None or n <= 0:
+                valores.append(None)
+            else:
+                valores.append(min(100, numero(porcentaje)))
+
+        descripcion = (
+            "El bloqueo no se incluye porque no disponemos "
+            "del número total de intentos."
+        )
 
     fig = go.Figure()
 
-    # Se muestran marcadores únicamente donde hay datos.
-    fig.add_trace(
-        go.Scatterpolar(
-            r=valores_validos,
-            theta=nombres_validos,
-            mode="lines+markers",
-            connectgaps=False,
-            fill="toself" if len(puntos_validos) >= 3 else "none",
-            fillcolor="rgba(255, 215, 0, 0.18)",
-            line=dict(color="#FFD700", width=3),
-            marker=dict(color="#FFD700", size=9),
-            name="Rendimiento registrado",
-            hovertemplate="%{theta}: %{r:.1f}%<extra></extra>",
+    # Mantener posiciones fijas para todos los fundamentos.
+    # Los valores ausentes se representan como huecos, no como cero.
+    disponibles = [
+        (nombre, valor)
+        for nombre, valor in zip(fundamentos, valores)
+        if valor is not None
+    ]
+
+    if disponibles:
+        nombres = list(fundamentos)
+        datos = list(valores)
+
+        # Cerrar el polígono únicamente cuando todos los valores existen.
+        if all(valor is not None for valor in datos):
+            nombres.append(nombres[0])
+            datos.append(datos[0])
+
+        fig.add_trace(
+            go.Scatterpolar(
+                r=datos,
+                theta=nombres,
+                mode="lines+markers",
+                connectgaps=False,
+                fill="toself" if len(disponibles) >= 3 else "none",
+                fillcolor="rgba(255,215,0,0.18)",
+                line=dict(color="#FFD700", width=3),
+                marker=dict(color="#FFD700", size=10),
+                name=modo,
+                hovertemplate=(
+                    "%{theta}: %{r:.1f} % de las acciones registradas"
+                    if modo == "Participación"
+                    else "%{theta}: %{r:.1f} % de resultado técnico"
+                ) + "<extra></extra>",
+            )
         )
-    )
 
     fig.update_layout(
+        dragmode=False,
+        clickmode="none",
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
         font=dict(color="#FFFFFF"),
@@ -84,38 +161,41 @@ def mostrar_radar_chv(resumen):
                 linecolor="#343640",
             ),
             angularaxis=dict(
-            categoryorder="array",
-            categoryarray=[
-                "Ataque",
-                "Saque",
-                "Recepción",
-                "Defensa",
-                "Bloqueo",
-            ],
-
+                categoryorder="array",
+                categoryarray=fundamentos,
                 gridcolor="#343640",
                 linecolor="#343640",
             ),
         ),
         showlegend=False,
-        margin=dict(l=35, r=35, t=20, b=20),
-        height=280,
+        margin=dict(l=30, r=30, t=20, b=20),
+        height=330,
     )
 
-    st.markdown('<div class="chv-panel-header"><div class="chv-panel-header-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#FFD700" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="#FFD700"/></svg></div><div class="chv-panel-header-text"><div class="chv-panel-header-title">Perfil de rendimiento</div><div class="chv-panel-header-subtitle">Rendimiento por fundamento</div></div></div>', unsafe_allow_html=True)
-    st.plotly_chart(fig, width="stretch")
+    st.plotly_chart(
+        fig,
+        width="stretch",
+        config={
+            "staticPlot": False,
+            "displayModeBar": False,
+            "scrollZoom": False,
+            "doubleClick": False,
+        },
+    )
 
-    faltantes = [
-        nombre for nombre, valor in indicadores
-        if valor is None
-    ]
+    st.caption(descripcion)
 
-    if faltantes:
-        st.caption(
-            "Sin porcentaje disponible: "
-            + ", ".join(faltantes)
-            + ". Los valores ausentes no equivalen a 0 %."
-        )
+    if modo == "Calidad de ejecución":
+        faltantes = [
+            f for f in fundamentos
+            if valores[fundamentos.index(f)] is None
+        ]
+        if faltantes:
+            st.caption(
+                "Sin indicador disponible: "
+                + ", ".join(faltantes)
+                + ". Los datos ausentes no equivalen a 0 %."
+            )
 
 
 
