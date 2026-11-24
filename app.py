@@ -1,3 +1,4 @@
+# CHV_SIDEBAR_CINEMATIC_V2
 
 import streamlit as st
 
@@ -35,6 +36,395 @@ st.set_page_config(
     page_icon="🏐",
     layout="wide"
 )
+
+
+# CHV_SIDEBAR_ESPACIO_V4
+st.markdown("""
+<style>
+
+section[data-testid="stSidebar"]
+[data-testid="stSidebarHeader"] {
+    padding-bottom: 0 !important;
+    min-height: 2rem !important;
+}
+
+section[data-testid="stSidebar"]
+[data-testid="stSidebarUserContent"] {
+    padding-top: 0 !important;
+}
+
+section[data-testid="stSidebar"]
+[data-testid="stSidebarContent"] {
+    padding-top: 0 !important;
+}
+
+section[data-testid="stSidebar"]
+[data-testid="stVerticalBlock"] > div:first-child {
+    margin-top: 0 !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+
+
+# CHV_SIDEBAR_REFINAMIENTO_V3
+st.markdown("""
+<style>
+
+/* Reducir espacio superior */
+section[data-testid="stSidebar"]
+[data-testid="stSidebarUserContent"] {
+    padding-top: 1rem !important;
+}
+
+/* Botones de navegación a ancho completo */
+section[data-testid="stSidebar"]
+[data-testid="stRadio"] {
+    width: 100% !important;
+}
+
+section[data-testid="stSidebar"]
+[data-testid="stRadio"]
+[role="radiogroup"] {
+    width: 100% !important;
+    align-items: stretch !important;
+}
+
+section[data-testid="stSidebar"]
+[data-testid="stRadio"]
+label {
+    width: 100% !important;
+    min-height: 52px !important;
+    box-sizing: border-box !important;
+}
+
+/* Acceso administrador en una sola línea */
+section[data-testid="stSidebar"]
+[data-testid="stExpander"] summary p {
+    white-space: nowrap !important;
+    font-size: 12px !important;
+}
+
+section[data-testid="stSidebar"]
+[data-testid="stExpander"] summary {
+    padding: 10px 8px !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+
+
+# CHV_SIDEBAR_CINEMATIC_V1
+
+import base64 as _chv_base64
+from pathlib import Path as _chv_Path
+
+_chv_logo = _chv_base64.b64encode(
+    (_chv_Path(__file__).resolve().parent /
+     "assets/escudo_chamar.png").read_bytes()
+).decode("ascii")
+
+st.sidebar.markdown("""
+<style>
+
+/* FONDO CINEMATOGRÁFICO */
+
+[data-testid="stSidebar"] {
+    background:
+        radial-gradient(
+            ellipse at 0% 0%,
+            rgba(255, 215, 0, 0.10),
+            transparent 42%
+        ),
+        linear-gradient(
+            160deg,
+            #181a20 0%,
+            #0c0e12 55%,
+            #08090c 100%
+        ) !important;
+
+    border-right: 1px solid rgba(255,215,0,0.20);
+}
+
+[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
+    background: transparent !important;
+}
+
+/* CABECERA */
+
+.chv-sidebar-brand {
+    text-align: center;
+    padding: 22px 0 25px;
+    border-bottom: 1px solid rgba(255,215,0,0.22);
+    margin-bottom: 12px;
+}
+
+.chv-sidebar-brand img {
+    width: 82px;
+    height: auto;
+    filter: drop-shadow(
+        0 0 15px rgba(255,215,0,0.25)
+    );
+    margin-bottom: 15px;
+}
+
+.chv-brand-title {
+    font-size: 29px;
+    font-weight: 900;
+    letter-spacing: 3px;
+    color: #ffffff;
+    line-height: 1.1;
+}
+
+.chv-brand-subtitle {
+    color: #ffd700;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 5px;
+    margin-top: 7px;
+}
+
+.chv-brand-season {
+    color: #a3a6ae;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    margin-top: 20px;
+    line-height: 1.8;
+}
+
+/* MENÚ DE NAVEGACIÓN */
+
+[data-testid="stSidebar"] [data-testid="stRadio"]
+[role="radiogroup"] {
+    gap: 8px;
+}
+
+[data-testid="stSidebar"] [data-testid="stRadio"]
+[role="radiogroup"] > label {
+
+    min-height: 48px;
+    padding: 12px 15px !important;
+    border-radius: 7px;
+    border: 1px solid transparent;
+    background: rgba(255,255,255,0.025);
+    cursor: pointer;
+    transition: all 0.20s ease;
+}
+
+/* OCULTAR CÍRCULOS ORIGINALES */
+
+[data-testid="stSidebar"] [data-testid="stRadio"]
+[role="radiogroup"] > label > div:first-child {
+    display: none !important;
+}
+
+/* EFECTO HOVER */
+
+[data-testid="stSidebar"] [data-testid="stRadio"]
+[role="radiogroup"] > label:hover {
+    background: rgba(255,215,0,0.07);
+    border-color: rgba(255,215,0,0.25);
+    transform: translateX(3px);
+}
+
+/* OPCIÓN SELECCIONADA */
+
+[data-testid="stSidebar"] [data-testid="stRadio"]
+[role="radiogroup"] > label:has(input:checked) {
+
+    background: linear-gradient(
+        90deg,
+        rgba(255,215,0,0.19),
+        rgba(255,215,0,0.025)
+    );
+
+    border: 1px solid rgba(255,215,0,0.28);
+    border-left: 3px solid #ffd700;
+
+    box-shadow:
+        0 0 16px rgba(255,215,0,0.06);
+}
+
+[data-testid="stSidebar"] [data-testid="stRadio"]
+[role="radiogroup"] > label p {
+    color: #c4c7ce !important;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+[data-testid="stSidebar"] [data-testid="stRadio"]
+[role="radiogroup"] > label:has(input:checked) p {
+    color: #ffd700 !important;
+    font-weight: 800;
+}
+
+/* ICONOS DE NAVEGACIÓN */
+
+[data-testid="stSidebar"] [data-testid="stRadio"]
+[role="radiogroup"] > label p::before {
+    display: inline-block;
+    width: 30px;
+    color: #ffd700;
+    font-size: 19px;
+}
+
+[data-testid="stSidebar"] [data-testid="stRadio"]
+label:nth-child(1) p::before {
+    content: "⌂";
+}
+
+[data-testid="stSidebar"] [data-testid="stRadio"]
+label:nth-child(2) p::before {
+    content: "◈";
+}
+
+[data-testid="stSidebar"] [data-testid="stRadio"]
+label:nth-child(3) p::before {
+    content: "▦";
+}
+
+[data-testid="stSidebar"] [data-testid="stRadio"]
+label:nth-child(4) p::before {
+    content: "♟";
+}
+
+[data-testid="stSidebar"] [data-testid="stRadio"]
+label:nth-child(5) p::before {
+    content: "◎";
+}
+
+[data-testid="stSidebar"] [data-testid="stRadio"]
+label:nth-child(6) p::before {
+    content: "▥";
+}
+
+/* ACCESO ADMINISTRADOR */
+
+[data-testid="stSidebar"] [data-testid="stExpander"] {
+    background: rgba(255,255,255,0.025);
+    border: 1px solid rgba(255,215,0,0.18);
+    border-radius: 8px;
+}
+
+[data-testid="stSidebar"] hr {
+    border-color: rgba(255,215,0,0.12);
+}
+
+
+/* CHV_SIDEBAR_CINEMATIC_V2 */
+
+[data-testid="stSidebar"] .chv-sidebar-brand {
+    padding: 8px 0 16px;
+    margin-bottom: 0;
+}
+
+[data-testid="stSidebar"] .chv-sidebar-brand img {
+    width: 68px;
+    margin-bottom: 9px;
+}
+
+[data-testid="stSidebar"] .chv-brand-title {
+    font-size: 27px;
+    letter-spacing: 4px;
+}
+
+[data-testid="stSidebar"] .chv-brand-subtitle {
+    font-size: 11px;
+    margin-top: 5px;
+}
+
+[data-testid="stSidebar"] .chv-brand-season {
+    margin-top: 13px;
+    font-size: 9px;
+    line-height: 1.7;
+}
+
+[data-testid="stSidebar"] [data-testid="stRadio"] {
+    width: 100% !important;
+}
+
+[data-testid="stSidebar"] [data-testid="stRadio"]
+[role="radiogroup"] {
+    width: 100% !important;
+    align-items: stretch !important;
+    gap: 6px !important;
+}
+
+[data-testid="stSidebar"] [data-testid="stRadio"]
+[role="radiogroup"] > label {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    min-height: 44px;
+    margin: 0 !important;
+    padding: 10px 14px !important;
+}
+
+[data-testid="stSidebar"] [data-testid="stRadio"]
+[role="radiogroup"] > label:hover {
+    transform: none !important;
+    background: rgba(255,215,0,0.08);
+}
+
+[data-testid="stSidebar"] [data-testid="stRadio"]
+[data-testid="stWidgetLabel"] p {
+    color: #92969f !important;
+    font-size: 10px !important;
+    font-weight: 800 !important;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+}
+
+[data-testid="stSidebar"] [data-testid="stRadio"]
+[data-testid="stWidgetLabel"] p::before {
+    content: none !important;
+}
+
+[data-testid="stSidebar"] [data-testid="stExpander"] {
+    background: rgba(255,255,255,0.015);
+    border: 1px solid rgba(255,215,0,0.12);
+    border-radius: 7px;
+}
+
+[data-testid="stSidebar"] hr {
+    margin: 8px 0 !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+st.sidebar.markdown(
+    f"""
+    <div class="chv-sidebar-brand">
+        <img src="data:image/png;base64,{_chv_logo}">
+        <div class="chv-brand-title">CHV</div>
+        <div class="chv-brand-subtitle">ANALYTICS</div>
+        <div class="chv-brand-season">
+            PRIMERA DIVISIÓN NACIONAL<br>
+            TEMPORADA 2026 / 2027
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+# FIN CHV_SIDEBAR_CINEMATIC_V1
+
+# CHV_SIDEBAR_MARGEN_V5
+st.markdown("""
+<style>
+
+section[data-testid="stSidebar"] .chv-sidebar-brand {
+    margin-top: -85px !important;
+    padding-top: 0 !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+
+
 
 st.markdown('\n<style>\n/* VOLLEY CHAMAR - AJUSTE ESPACIO SUPERIOR */\n\n[data-testid="stMainBlockContainer"],\n.block-container {\n    padding-top: 2.5rem !important;\n}\n\n</style>\n', unsafe_allow_html=True)
 if "admin_autenticado" not in st.session_state:
@@ -107,6 +497,23 @@ if not es_version_publica():
 if es_version_publica():
     st.session_state["admin_autenticado"] = False
 
+
+st.markdown("""
+<style>
+/* CHV AJUSTE MARGEN PRINCIPAL V1 */
+
+[data-testid="stMainBlockContainer"] {
+    padding-top: 1rem !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+menu = st.sidebar.radio(
+    "NAVEGACIÓN",
+    ["Inicio", "Equipos", "Temporadas", "Jugadores", "Partidos", "Estadísticas"]
+)
+
 if not es_version_publica():
     # Acceso de administrador
     st.sidebar.divider()
@@ -138,10 +545,27 @@ if not es_version_publica():
             st.session_state["admin_autenticado"] = False
             st.rerun()
 
-menu = st.sidebar.radio(
-    "Menú principal",
-    ["Inicio", "Equipos", "Temporadas", "Jugadores", "Partidos", "Estadísticas"]
-)
+
+
+st.markdown("""
+<style>
+/* CHV_ELIMINAR_ESPACIOS_CSS_V1 */
+
+[data-testid="stMainBlockContainer"]
+[data-testid="stElementContainer"]:has(style):not(:has(.chamar-hero)):not(:has([data-testid="stMarkdownContainer"] > :not(style))) {
+    display: none !important;
+}
+
+[data-testid="stMainBlockContainer"] {
+    padding-top: 3rem !important;
+}
+
+.chamar-hero {
+    margin-top: 0 !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
 
 if menu == "Inicio":
     import base64
