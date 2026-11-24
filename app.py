@@ -503,7 +503,7 @@ st.markdown("""
 /* CHV AJUSTE MARGEN PRINCIPAL V1 */
 
 [data-testid="stMainBlockContainer"] {
-    padding-top: 1rem !important;
+    padding-top: 3rem !important;
 }
 
 </style>
@@ -547,27 +547,27 @@ if not es_version_publica():
 
 
 
-st.markdown("""
-<style>
-/* CHV_ELIMINAR_ESPACIOS_CSS_V1 */
-
-[data-testid="stMainBlockContainer"]
-[data-testid="stElementContainer"]:has(style):not(:has(.chamar-hero)):not(:has([data-testid="stMarkdownContainer"] > :not(style))) {
-    display: none !important;
-}
-
-[data-testid="stMainBlockContainer"] {
-    padding-top: 3rem !important;
-}
-
-.chamar-hero {
-    margin-top: 0 !important;
-}
-
-</style>
-""", unsafe_allow_html=True)
 
 if menu == "Inicio":
+    st.markdown("""
+    <style>
+    /* CHV_ELIMINAR_ESPACIOS_CSS_V1 */
+
+    [data-testid="stMainBlockContainer"]
+    [data-testid="stElementContainer"]:has(style):not(:has(.chamar-hero)):not(:has([data-testid="stMarkdownContainer"] > :not(style))) {
+        display: none !important;
+    }
+
+    [data-testid="stMainBlockContainer"] {
+        padding-top: 3rem !important;
+    }
+
+    .chamar-hero {
+        margin-top: 0 !important;
+    }
+
+    </style>
+    """, unsafe_allow_html=True)
     import base64
     import textwrap
 
