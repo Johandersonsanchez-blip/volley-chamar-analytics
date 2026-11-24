@@ -520,13 +520,14 @@ def mostrar_distribucion_ofensiva(jugador_id, temporada_id):
             "J5 — Acenvolley",
             "J6 — Jatorkide",
             "J7 — CV Oleiros",
+            "J8 — Rio Duero Soria",
         ],
         key=f"distribucion_jornada_{jugador_id}_{temporada_id}",
     )
 
-    numero_jornada = int(jornada[1])
+    numero_jornada = int(jornada.split()[0][1:])
 
-    total_sets = 5 if numero_jornada in (3, 4) else 4
+    total_sets = 3 if numero_jornada == 8 else (5 if numero_jornada in (3, 4) else 4)
 
     opciones = ["Partido completo"] + [
         f"Set {numero}" for numero in range(1, total_sets + 1)
