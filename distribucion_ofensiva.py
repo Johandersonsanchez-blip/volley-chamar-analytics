@@ -125,6 +125,42 @@ def calcular_distribucion(sets, jornada=1):
     # CHV_J7_DISTRIBUCION_COLECTIVA_V2
     # Datos oficiales J7 - CV Oleiros (Data Volley).
     # Formato: set: (ataques totales, ataques centrales).
+
+    # CHV_J8_INTEGRACION_V1
+    # Distribucion colectiva estimada por set.
+    if jornada == 8:
+        datos_j8 = {
+            1: (32, 8),
+            2: (20, 5),
+            3: (30, 10),
+        }
+
+        if not sets or any(s not in datos_j8 for s in sets):
+            return {}, 0
+
+        ataques = sum(datos_j8[s][0] for s in sets)
+        centrales = sum(datos_j8[s][1] for s in sets)
+
+        proporcion_central = centrales / ataques
+        zonas_exteriores = [4, 2, 5, 6, 1]
+
+        peso_total = sum(
+            REFERENCIA_ZONAS_J2[z]
+            for z in zonas_exteriores
+        )
+
+        distribucion = {3: proporcion_central * 100}
+
+        for zona in zonas_exteriores:
+            distribucion[zona] = (
+                (1 - proporcion_central)
+                * REFERENCIA_ZONAS_J2[zona]
+                / peso_total
+                * 100
+            )
+
+        return distribucion, ataques
+
     if jornada == 7:
         datos_j7 = {
             1: (28, 9),
@@ -517,6 +553,92 @@ def mostrar_distribucion_ofensiva(jugador_id, temporada_id):
     # cuando exista un desglose suficiente por set.
 
     # CHV_J7_TARJETAS_RENDIMIENTO
+    if numero_jornada == 8:
+        import sqlite3
+
+        with sqlite3.connect(
+            "file:volley_chamar_publica.db?mode=ro",
+            uri=True
+        ) as conexion:
+            jugador = conexion.execute(
+                "SELECT nombre FROM jugadores WHERE id = ?",
+                (jugador_id,)
+            ).fetchone()
+
+        nombre = jugador[0].lower() if jugador else ""
+
+        if "portillo" in nombre:
+            colocaciones = 51
+            positivas = 28
+        elif "marina" in nombre:
+            colocaciones = 17
+            positivas = 9
+        else:
+            colocaciones = None
+            positivas = None
+
+        if colocaciones is not None:
+            calidad = positivas / colocaciones * 100
+
+            st.markdown("### 🏐 Rendimiento del colocador")
+
+            columnas = st.columns(3)
+
+            tarjetas = [
+                (
+                    "🏐 COLOCACIONES OFICIALES",
+                    str(colocaciones),
+                    "Total de J8"
+                ),
+                (
+                    "🎯 CALIDAD POSITIVA",
+                    f"{calidad:.1f}%",
+                    "Calidad oficial de J8"
+                ),
+                (
+                    "📊 COLOCACIONES POSITIVAS",
+                    str(positivas),
+                    "Perfectas + positivas"
+                ),
+            ]
+
+            for columna, (titulo, valor, descripcion) in zip(
+                columnas, tarjetas
+            ):
+                with columna:
+                    st.markdown(
+                        f"""
+                        <div style="
+                            background:linear-gradient(
+                                135deg,#24252d,#15161c
+                            );
+                            border:1px solid #41434d;
+                            border-top:4px solid #ffd700;
+                            border-radius:17px;
+                            padding:25px 12px;
+                            text-align:center;
+                            min-height:175px;
+                        ">
+                            <div style="
+                                color:#d6d6df;
+                                font-size:13px;
+                                font-weight:800;
+                            ">{titulo}</div>
+                            <div style="
+                                color:white;
+                                font-size:39px;
+                                font-weight:800;
+                                margin:22px 0;
+                            ">{valor}</div>
+                            <div style="
+                                color:#a9a9b5;
+                                font-size:12px;
+                            ">{descripcion}</div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+
     if numero_jornada == 7:
         import sqlite3
 
@@ -604,6 +726,178 @@ def mostrar_distribucion_ofensiva(jugador_id, temporada_id):
                     )
 
     # CHV_VISUAL_J7_OLEIROS
+    if numero_jornada == 8:
+        st.markdown("#### Jornada 8 · Rio Duero Soria")
+
+
+        # CHV_J8_COMPLEMENTOS_V2
+        # Estadísticas oficiales y participación estimada.
+        import sqlite3
+
+        with sqlite3.connect(
+            "file:volley_chamar_publica.db?mode=ro",
+            uri=True
+        ) as conexion_j8:
+            fila = conexion_j8.execute(
+                "SELECT nombre FROM jugadores WHERE id = ?",
+                (jugador_id,)
+            ).fetchone()
+
+        nombre_j8 = fila[0].lower() if fila else ""
+
+        datos_j8 = None
+
+        if "portillo" in nombre_j8:
+            datos_j8 = {
+                "colocaciones": 51,
+                "saques": 7,
+                "errores_saque": 2,
+                "ataques": 1,
+                "puntos": 0,
+                "titular": True,
+            }
+        elif "marina" in nombre_j8:
+            datos_j8 = {
+                "colocaciones": 17,
+                "saques": 2,
+                "errores_saque": 0,
+                "ataques": 1,
+                "puntos": 1,
+                "titular": False,
+            }
+
+        if datos_j8:
+            st.markdown("### 📊 Otras estadísticas de la jornada")
+
+            columnas = st.columns(4)
+
+            tarjetas = [
+                ("🎾 SAQUES", datos_j8["saques"]),
+                ("❌ ERRORES DE SAQUE", datos_j8["errores_saque"]),
+                ("⚡ ATAQUES", datos_j8["ataques"]),
+                ("🏆 PUNTOS", datos_j8["puntos"]),
+            ]
+
+            for columna, (titulo, valor) in zip(columnas, tarjetas):
+                with columna:
+                    st.markdown(
+                        f"""
+                        <div style="
+                            background:linear-gradient(135deg,#24252d,#15161c);
+                            border:1px solid #41434d;
+                            border-top:4px solid #ffd700;
+                            border-radius:16px;
+                            padding:22px 10px;
+                            text-align:center;
+                            min-height:140px;
+                        ">
+                            <div style="
+                                color:#d6d6df;
+                                font-size:13px;
+                                font-weight:800;
+                            ">{titulo}</div>
+                            <div style="
+                                color:white;
+                                font-size:35px;
+                                font-weight:800;
+                                margin-top:20px;
+                            ">{valor}</div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+
+            st.markdown("### Participación estimada por set")
+
+            ataques_sets = [32, 20, 30]
+            total_ataques = sum(ataques_sets)
+            total_colocaciones = datos_j8["colocaciones"]
+
+            columnas_sets = st.columns(3)
+
+            for numero_set, (columna, ataques_set) in enumerate(
+                zip(columnas_sets, ataques_sets),
+                start=1
+            ):
+                estimacion = (
+                    total_colocaciones * ataques_set / total_ataques
+                )
+
+                estado = (
+                    "TITULAR" if datos_j8["titular"] else "NO TITULAR"
+                )
+
+                with columna:
+                    st.markdown(
+                        f"""
+                        <div style="
+                            background:linear-gradient(135deg,#24252d,#15161c);
+                            border:1px solid #41434d;
+                            border-top:4px solid #ffd700;
+                            border-radius:16px;
+                            padding:22px 10px;
+                            text-align:center;
+                            min-height:160px;
+                        ">
+                            <div style="
+                                color:#d6d6df;
+                                font-size:14px;
+                                font-weight:800;
+                            ">SET {numero_set}</div>
+                            <div style="
+                                color:white;
+                                font-size:35px;
+                                font-weight:800;
+                                margin:20px 0;
+                            ">{estimacion:.1f}</div>
+                            <div style="
+                                color:#ffd700;
+                                font-size:12px;
+                                font-weight:800;
+                            ">{estado}</div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+
+            st.caption(
+                "Participación estimada proporcional al volumen "
+                "de ataques por set; no son colocaciones "
+                "individuales registradas."
+            )
+
+        st.markdown("##### Distribución ofensiva por zonas")
+
+        distribucion, ataques = calcular_distribucion(
+            sets,
+            jornada=8
+        )
+
+        st.metric("Ataques analizados", ataques)
+
+        st.caption(
+            "J8 — Distribución ofensiva colectiva estimada. "
+            "No representa decisiones individuales de cada colocador."
+        )
+
+        if distribucion:
+            st.plotly_chart(
+                crear_cancha(distribucion),
+                width="stretch",
+                key=f"cancha_j8_{jugador_id}_{temporada_id}",
+                config={
+                    "displayModeBar": False,
+                    "scrollZoom": False
+                }
+            )
+        else:
+            st.info(
+                "No hay distribución disponible "
+                "para esta selección."
+            )
+
+        return
+
     if numero_jornada == 7:
         st.markdown("#### Jornada 7 · CV Oleiros")
 
