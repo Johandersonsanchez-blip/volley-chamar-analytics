@@ -409,7 +409,108 @@ st.sidebar.markdown(
     unsafe_allow_html=True
 )
 
-# FIN CHV_SIDEBAR_CINEMATIC_V1
+# FIN CHV_SIDEBAR_CINEMATIC_V1\n
+
+
+# CHV_SIDEBAR_CENTRADO_V1
+st.markdown("""
+<style>
+
+section[data-testid="stSidebar"] div[data-testid="stElementContainer"]:has([data-testid="stRadio"]),
+section[data-testid="stSidebar"] div[data-testid="stRadio"],
+section[data-testid="stSidebar"] div[role="radiogroup"] {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    align-self: stretch !important;
+    box-sizing: border-box !important;
+}
+
+section[data-testid="stSidebar"] div[role="radiogroup"] {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+}
+
+section[data-testid="stSidebar"] div[role="radiogroup"] > label {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    box-sizing: border-box !important;
+}
+
+section[data-testid="stSidebar"] div[role="radiogroup"] > label p {
+    white-space: nowrap !important;
+}
+
+section[data-testid="stSidebar"] [data-testid="stRadio"] [data-testid="stWidgetLabel"] {
+    width: 100% !important;
+    justify-content: center !important;
+    text-align: center !important;
+}
+
+section[data-testid="stSidebar"] [data-testid="stRadio"] [data-testid="stWidgetLabel"]::before {
+    display: block !important;
+    width: 100% !important;
+    text-align: center !important;
+}
+
+section[data-testid="stSidebar"] [data-testid="stExpander"] {
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+
+
+
+
+/* CHV - ALINEACION UNIFORME ICONOS Y TEXTOS */
+
+section[data-testid="stSidebar"] div[role="radiogroup"] > label {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    flex-wrap: nowrap !important;
+    padding-left: 18% !important;
+    padding-right: 8px !important;
+    gap: 12px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+section[data-testid="stSidebar"] div[role="radiogroup"] > label::before {
+    width: 24px !important;
+    min-width: 24px !important;
+    flex: 0 0 24px !important;
+    text-align: center !important;
+    margin: 0 !important;
+}
+
+section[data-testid="stSidebar"] div[role="radiogroup"] > label [data-testid="stMarkdownContainer"] {
+    text-align: left !important;
+    flex: 1 !important;
+    margin: 0 !important;
+}
+
+section[data-testid="stSidebar"] div[role="radiogroup"] > label p {
+    text-align: left !important;
+    white-space: nowrap !important;
+    margin: 0 !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
+# FIN CHV_SIDEBAR_CENTRADO_V1
+
+
+
 
 # CHV_SIDEBAR_MARGEN_V5
 st.markdown("""
@@ -2287,8 +2388,125 @@ elif menu == "Partidos":
         st.info("Primero debes registrar un equipo y una temporada.")
 
 elif menu == "Estadísticas":
-    st.header("🏐 Centro de rendimiento")
-    st.caption("VOLLEY CHAMAR · ANÁLISIS DE PARTIDOS")
+
+    # CHV_STATS_AMBIENT_V1
+    st.markdown("""
+<style>
+
+[data-testid="stMainBlockContainer"],
+[data-testid="stMain"] .block-container {
+    padding-top: 1rem !important;
+}
+
+.chv-stats-heading {
+    margin-top: -70px !important;
+}
+
+@media (max-width: 768px) {
+    .chv-stats-heading {
+        margin-top: 0px !important;
+    }
+
+    [data-testid="stMainBlockContainer"],
+    [data-testid="stMain"] .block-container {
+        padding-top: 2rem !important;
+    }
+}
+
+</style>
+""", unsafe_allow_html=True)
+    # FIN CHV_STATS_AMBIENT_V1
+
+
+    # CHV_ESTADISTICAS_CENTRADAS_V1
+    st.markdown("""
+    <style>
+    [data-testid="stMainBlockContainer"] h1,
+    [data-testid="stMainBlockContainer"] h2,
+    [data-testid="stMainBlockContainer"] h3,
+    [data-testid="stMainBlockContainer"] h4 {
+        text-align: center !important;
+    }
+
+    [data-testid="stMainBlockContainer"] [data-testid="stCaptionContainer"] {
+        text-align: center !important;
+    }
+
+    [data-testid="stMetric"] {
+        text-align: center !important;
+        align-items: center !important;
+    }
+
+    [data-testid="stMetricLabel"] {
+        justify-content: center !important;
+        width: 100%;
+    }
+
+    [data-testid="stMetricValue"] {
+        text-align: center !important;
+        width: 100%;
+    }
+
+    .chv-stats-table {
+        width: 100%;
+        overflow-x: auto;
+        border-radius: 12px;
+        border: 1px solid #30343e;
+    }
+
+    .chv-stats-table table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+
+    .chv-stats-table th {
+        text-align: center !important;
+        background: #1c2029;
+        color: #facc15;
+        padding: 14px 10px;
+        border-bottom: 2px solid #eab308;
+        white-space: nowrap;
+    }
+
+    .chv-stats-table td {
+        text-align: center !important;
+        padding: 12px 10px;
+        border-bottom: 1px solid #292d36;
+        white-space: nowrap;
+    }
+
+    .chv-stats-table tr:nth-child(even) {
+        background: #181b22;
+    }
+
+    .chv-stats-table tbody tr:hover {
+        background: rgba(250, 204, 21, 0.07);
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    def chv_tabla_centrada(datos=None, *args, **kwargs):
+        import pandas as pd
+
+        tabla = pd.DataFrame(datos).copy()
+        tabla = tabla.astype(object).where(tabla.notna(), "—")
+
+        html = tabla.to_html(
+            index=False,
+            escape=True,
+            border=0
+        )
+
+        st.markdown(
+            '<div class="chv-stats-table">' + html + '</div>',
+            unsafe_allow_html=True
+        )
+
+    # FIN CHV_ESTADISTICAS_CENTRADAS_V1
+    # CHV_STATS_HEADER_CINEMATIC_V1
+    st.html('\n<style>\n.chv-stats-heading {\n    position: relative;\n    width: fit-content;\n    max-width: 100%;\n    margin: 0 auto;\n    box-sizing: border-box;\n    text-align: center;\n    padding: 22px clamp(16px, 4vw, 48px);\n    border: 1px solid #363b46;\n    border-radius: 16px;\n    background: linear-gradient(\n        120deg, #20232b, #14171e, #1b1e26\n    );\n}\n\n.chv-stats-heading::before,\n.chv-stats-heading::after {\n    content: "";\n    position: absolute;\n    width: 30px;\n    height: 30px;\n    pointer-events: none;\n}\n\n.chv-stats-heading::before {\n    top: -1px;\n    left: -1px;\n    border-top: 3px solid #facc15;\n    border-left: 3px solid #facc15;\n    border-top-left-radius: 16px;\n}\n\n.chv-stats-heading::after {\n    bottom: -1px;\n    right: -1px;\n    border-bottom: 3px solid #facc15;\n    border-right: 3px solid #facc15;\n    border-bottom-right-radius: 16px;\n}\n\n.chv-stats-heading .chv-eyebrow {\n    color: #facc15;\n    font-size: 11px;\n    font-weight: 800;\n    letter-spacing: 4px;\n    margin-bottom: 12px;\n}\n\n.chv-stats-heading .chv-heading-title {\n    color: #f8fafc;\n    font-size: clamp(22px, 3vw, 32px);\n    font-weight: 800;\n    letter-spacing: 1px;\n    line-height: 1.2;\n}\n\n.chv-stats-heading .chv-heading-subtitle {\n    color: #9ca3af;\n    font-size: 13px;\n    margin-top: 10px;\n}\n\n.chv-stats-heading .chv-heading-line {\n    width: 44px;\n    height: 3px;\n    background: #facc15;\n    border-radius: 3px;\n    margin: 18px auto 0;\n}\n</style>\n\n<div class="chv-stats-heading">\n    <div class="chv-eyebrow">CHV ANALYTICS</div>\n    <div class="chv-heading-title">\n        CENTRO DE RENDIMIENTO\n    </div>\n    <div class="chv-heading-subtitle">\n        Análisis de partidos · Temporada 2026/2027\n    </div>\n    <div class="chv-heading-line"></div>\n</div>\n')
+    # FIN CHV_STATS_HEADER_CINEMATIC_V1
 
     with conectar() as conexion:
         partidos_estadisticas = conexion.execute("""
@@ -2314,13 +2532,240 @@ elif menu == "Estadísticas":
         partido = opciones[partido_elegido]
         partido_id, jornada, rival, fecha, resultado = partido
 
-        st.markdown(f"## Jornada {jornada} · {rival}")
+        # CHV_MATCH_CENTER_CINEMATIC_V1
+        import html as _match_html
+        import re as _match_re
 
-        col1, col2, col3 = st.columns(3)
-        col1.metric("Resultado", resultado)
-        fecha_formateada = "/".join(fecha.split("-")[::-1])
-        col2.metric("Fecha", fecha_formateada)
-        col3.metric("Jornada", jornada)
+        fecha_formateada = "/".join(str(fecha).split("-")[::-1])
+
+        _marcador = _match_re.fullmatch(
+            r"\s*(\d+)\s*[-–:]\s*(\d+)\s*",
+            str(resultado)
+        )
+
+        _estado = "RESULTADO"
+        _color = "#facc15"
+
+        if _marcador:
+            _local, _rival = map(int, _marcador.groups())
+            if _local > _rival:
+                _estado = "VICTORIA"
+                _color = "#4ade80"
+            elif _local < _rival:
+                _estado = "DERROTA"
+                _color = "#f87171"
+
+        _rival_seguro = _match_html.escape(str(rival))
+        _resultado_seguro = _match_html.escape(str(resultado))
+        _jornada_segura = _match_html.escape(str(jornada))
+        _fecha_segura = _match_html.escape(fecha_formateada)
+
+        st.markdown("""
+        <style>
+        .chv-match-center {
+            position: relative;
+            overflow: hidden;
+            padding: 34px 24px;
+            margin: 18px 0 12px;
+            border: 1px solid #343640;
+            border-top: 3px solid #facc15;
+            border-radius: 18px;
+            background:
+                radial-gradient(ellipse at 10% 50%, rgba(250,204,21,.13), transparent 45%),
+                repeating-linear-gradient(135deg, transparent 0px, transparent 55px, rgba(255,255,255,.025) 56px, transparent 57px),
+                linear-gradient(120deg, #202127, #11141b 55%, #1c2029);
+            box-shadow: 0 16px 40px rgba(0,0,0,.3);
+            text-align: center;
+        }
+
+        .chv-match-kicker {
+            color: #facc15;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 3px;
+        }
+
+        .chv-match-jornada {
+            color: #a4a7b2;
+            font-size: 13px;
+            letter-spacing: 3px;
+            margin: 15px 0 24px;
+        }
+
+        .chv-match-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.1fr 1fr;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .chv-match-team {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        .chv-match-team img {
+            width: 82px;
+            height: 90px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 16px rgba(250,204,21,.22));
+        }
+
+        .chv-match-name {
+            color: #f5f5f5;
+            font-size: clamp(15px, 2vw, 24px);
+            font-weight: 850;
+            text-transform: uppercase;
+            overflow-wrap: anywhere;
+        }
+
+        .chv-match-rival-symbol {
+            width: 82px;
+            height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #9297a3;
+            font-size: 48px;
+        }
+
+        .chv-match-score {
+            color: #ffffff;
+            font-size: clamp(44px, 7vw, 100px);
+            font-weight: 900;
+            line-height: 1.15;
+            letter-spacing: 4px;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+
+        .chv-match-status {
+            display: inline-block;
+            padding: 7px 18px;
+            margin-top: 12px;
+            border: 1px solid currentColor;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 2px;
+        }
+
+        .chv-match-footer {
+            border-top: 1px solid rgba(255,255,255,.10);
+            margin-top: 30px;
+            padding-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 35px;
+            color: #a4a7b2;
+            font-size: 12px;
+            letter-spacing: 1.5px;
+        }
+
+        @media (max-width: 640px) {
+            .chv-match-center {
+                padding: 24px 10px;
+            }
+
+            .chv-match-grid {
+                gap: 6px;
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+
+            .chv-match-team img,
+            .chv-match-rival-symbol {
+                width: 48px;
+                height: 55px;
+            }
+
+            .chv-match-name {
+                font-size: 11px;
+            }
+
+            .chv-match-score {
+                font-size: clamp(26px, 7vw, 42px);
+                letter-spacing: 0;
+            }
+
+            .chv-match-footer {
+                gap: 15px;
+                font-size: 10px;
+            }
+
+            .chv-match-status {
+                padding: 5px 8px;
+                font-size: 9px;
+                letter-spacing: 1px;
+            }
+        }
+        </style>
+        """, unsafe_allow_html=True)
+
+
+        # CHV_ESCUDOS_RIVALES_V1
+        import base64 as _base64_rival
+        from pathlib import Path as _PathRival
+
+        _escudos_rivales = {
+            "las rozas": "las_rozas.png",
+            "covadonga": "covadonga.png",
+            "valladolid": "valladolid.png",
+            "palencia": "palencia.png",
+            "acenvolley": "acenvolley.png",
+            "jatorkide": "jatorkide.png",
+            "cv oleiros": "oleiros.png",
+            "rio duero soria": "rio_duero_soria.png",
+        }
+
+        _nombre_rival = str(rival).strip().lower()
+        _archivo_rival = _escudos_rivales.get(_nombre_rival)
+        _logo_rival_html = "◈"
+
+        if _archivo_rival:
+            _ruta_rival = _PathRival("assets/rivales") / _archivo_rival
+            if _ruta_rival.is_file():
+                _imagen_rival = _base64_rival.b64encode(
+                    _ruta_rival.read_bytes()
+                ).decode("ascii")
+                _logo_rival_html = (
+                    f'<img src="data:image/png;base64,{_imagen_rival}" '
+                    'style="width:100px;height:100px;'
+                    'object-fit:contain;display:block;margin:auto;'
+                    'filter:drop-shadow(0 0 12px rgba(255,255,255,0.12));">'
+                )
+        # FIN CHV_ESCUDOS_RIVALES_V1
+
+        st.markdown(f"""
+        <div class="chv-match-center">
+            <div class="chv-match-kicker">CHV ANALYTICS · MATCH CENTER</div>
+            <div class="chv-match-jornada">JORNADA {_jornada_segura}</div>
+            <div class="chv-match-grid">
+                <div class="chv-match-team">
+                    <img src="data:image/png;base64,{_chv_logo}">
+                    <div class="chv-match-name">Chamartín Vergara</div>
+                </div>
+                <div>
+                    <div class="chv-match-score">{_resultado_seguro}</div>
+                    <div class="chv-match-status" style="color:{_color}">
+                        {_estado}
+                    </div>
+                </div>
+                <div class="chv-match-team">
+                    <div class="chv-match-rival-symbol">{_logo_rival_html}</div>
+                    <div class="chv-match-name">{_rival_seguro}</div>
+                </div>
+            </div>
+            <div class="chv-match-footer">
+                <span>FECHA · {_fecha_segura}</span>
+                <span>TEMPORADA 2026/2027</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        # FIN CHV_MATCH_CENTER_CINEMATIC_V1
 
         with conectar() as conexion:
             colectivos = conexion.execute("""
@@ -2369,7 +2814,7 @@ elif menu == "Estadísticas":
                 for fila in colectivos
             ]
 
-            st.dataframe(
+            chv_tabla_centrada(
                 resumen,
                 use_container_width=True,
                 hide_index=True
@@ -2471,7 +2916,7 @@ elif menu == "Estadísticas":
                     for registro in detalle
                 ]
 
-            st.dataframe(
+            chv_tabla_centrada(
                 [
                     {
                         columna: valor
